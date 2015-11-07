@@ -24,12 +24,13 @@ package lrcache
 
 import (
 	"github.com/hashicorp/golang-lru"
+	redis "github.com/streamrail/redis-storage"
 )
 
 // LRCache holds a reference to an LRU cache and a Redis cache
 type LRCache struct {
 	lruCache   *lru.Cache
-	redisCache *redisStorage
+	redisCache *redis.RedisStorage
 	onEvict    func(key interface{}, val interface{})
 }
 
@@ -37,8 +38,9 @@ type LRCache struct {
 func NewLRCache(redisHost string, redisConnPoolSize int, redisPrefix string, size int) (*LRCache, error) {
 	result := &LRCache{
 		lruCache:   nil,
-		redisCache: newRedisStorage(redisHost, redisConnPoolSize, redisPrefix),
+		redisCache: redis.NewRedisStorage(redisHost, redisConnPoolSize, redisPrefix),
 	}
+	// When evictning an item from the in-memoro LRU cache, save the item on redis as a second caching tier
 	result.onEvict = func(key interface{}, val interface{}) {
 		if str, ok := key.(string); ok {
 			result.redisCache.Set(str, val)
