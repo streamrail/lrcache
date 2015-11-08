@@ -54,6 +54,17 @@ func (l *LRCacheItem) Value() interface{} {
 	return l.v
 }
 
+// get gob value from cached item
+func (l *LRCacheItem) GobVal() ([]uint8, error) {
+	if l.v == nil {
+		return nil, nil
+	}
+	if gobVal, ok := l.v.([]uint8); ok {
+		return gobVal, nil
+	}
+	return nil, errors.New("value is not gob")
+}
+
 // get string value from cached item
 func (l *LRCacheItem) StringVal() (string, error) {
 	if l.Value() == nil {
@@ -165,6 +176,22 @@ func (l *LRCacheItem) Float64Val() (float64, error) {
 			return l.Value().(float64), nil
 		} else {
 			return 0, errors.New("value is not a float64")
+		}
+	}
+}
+
+// get []byte value from cached item
+func (l *LRCacheItem) BytesVal() ([]byte, error) {
+	if l.Value() == nil {
+		return nil, nil
+	}
+	if l.IsGob() {
+		return l.Value().([]uint8), nil
+	} else {
+		if reflect.TypeOf(l.Value()).String() == "[]byte" {
+			return l.Value().([]byte), nil
+		} else {
+			return nil, errors.New("value is not a []byte")
 		}
 	}
 }
