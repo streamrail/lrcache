@@ -80,3 +80,8 @@ func (lr *LRCache) Get(key string) *LRCacheItem {
 func (lr *LRCache) Set(key string, val interface{}) bool {
 	return lr.lruCache.Add(key, val)
 }
+
+func (lr *LRCache) Delete(key string) {
+	lr.lruCache.Remove(key)
+	lr.redisCache.Delete(key)
+}
